@@ -1,39 +1,39 @@
 import sys
-#import Entrez library from biopython, letting ncbi know who I am
+import os
+import urllib.request
+import gzip
+import re
 from Bio import Entrez
 
 def main(email=None, api_key=None):
-	Entrez.email = email
-	Entrez.api_key = api_key
+    Entrez.email = email
+    Entrez.api_key = api_key
 
-	#use esearch function to retrieve primary IDs
-	#by default, returns 20 items which can be adjusted using "retmax" parameter
-	#I set it to 25 as example (will set to 1000 later) and generate an xml object
-	handle = Entrez.esearch(db="assembly", term = "E. coli[Organism] AND contig[Assembly Level]", retmax = 25)
+    handle = Entrez.esearch(db="assembly", term = "E. coli[Organism] AND contig[Assembly Level]", retmax = 1)
 
-	#read function parses XML results to a python object (dictionary)
-	record = Entrez.read(handle)
+    record = Entrez.read(handle)
 
-
-
-	for i in record['IdList']:
-		handle1 = Entrez.esummary(db="assembly", id = i)
-		record1 = Entrez.read(handle1)
-		j = record1['DocumentSummarySet']['DocumentSummary'][0]['FtpPath_GenBank']
-		print(j)
-
-		#j.filepart = j.strip(/) last element of list
-		#j.string =  join(j, j.filepart,"_genomic.fna.gz")
-		#wget j.string
-		#gunzip j.string
-		#The contigs within a particular assembly are within the GCA*_genomic.fna file
+    for i in record['IdList']:
+        handle1 = Entrez.esummary(db="assembly", id = i)
+        record1 = Entrez.read(handle1)
+        url = record1['DocumentSummarySet']['DocumentSummary'][0]['FtpPath_GenBank']
+        file_name = os.path.basename(url)
+        link = os.path.join(url,file_name+'_genomic.fna.gz')
+        print(link)
+        urllib.request.urlretrieve(link, f'{file_name}.fna.gz')
+        with gzip.open(f'{file_name}.fna.gz','r') as f:
+            data = f.read()
+            print(data)
+            #x = re.findall("^>", data)
+            #print(x)
+        
 
 if __name__ == "__main__":
-	print("In Main")
-	email = sys.argv[1]
-	api_key = sys.argv[2]
+    print("In Main")
+    email = sys.argv[1]
+    api_key = sys.argv[2]
 
-	print(email)
-	print(api_key)
+    print(email)
+    print(api_key)
 
-	main(email, api_key)
+    main(email, api_key)
