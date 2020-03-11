@@ -22,12 +22,9 @@ def main(email=None, api_key=None):
         print(link)
         urllib.request.urlretrieve(link, f'{file_name}.fna.gz')
         with gzip.open(f'{file_name}.fna.gz','r') as f:
-            data = f.read()
-            print(data)
-            #x = re.findall("^>", data)
-            #print(x)
+            x = re.search("^>", f)
+            print (x)
         
-
 if __name__ == "__main__":
     print("In Main")
     email = sys.argv[1]
