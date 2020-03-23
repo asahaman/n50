@@ -19,9 +19,9 @@ Output is written to output.txt file which reads something like:
 
 Opened file GCA_004160775.2_PDT000319866.2.fna.gz
 File has assembly named AAAAOK02 with following contigs and respective lengths:
-         AAAAOK020000001.1       237814
-         AAAAOK020000002.1       174736
-         AAAAOK020000003.1       165434
-	 ..............................
-	 ..............................
+	AAAAOK020000001.1       237814
+	AAAAOK020000002.1       174736
+	AAAAOK020000003.1       165434
+	..............................
+	..............................
 Assembly AAAAOK02 has 268 contigs
