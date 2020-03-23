@@ -8,4 +8,20 @@ If you dont have an NCBI api key, create an account at https://www.ncbi.nlm.nih.
 
 Usage: python fetch_contigs.py "Valid email id" "NCBI api_key" "Genus name" "Species Name" "Number of assemblies" 
 
+
 Exercise 2: Python script for assessing fasta assemblies and calculating N50 contig length
+
+Given a directory of zipped (.gz) assembly files, the script reads each assembly file and embedded fasta formatted contigs. The script subsequently calculates contig lengths and assembly N50 values. 
+
+Usage: python calculating_n50_assemblies.py
+
+Output is written to output.txt file which reads something like:
+
+Opened file GCA_004160775.2_PDT000319866.2.fna.gz
+File has assembly named AAAAOK02 with following contigs and respective lengths:
+         AAAAOK020000001.1       237814
+         AAAAOK020000002.1       174736
+         AAAAOK020000003.1       165434
+	 ..............................
+	 ..............................
+Assembly AAAAOK02 has 268 contigs
