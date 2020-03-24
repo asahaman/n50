@@ -13,9 +13,9 @@ Usage: python fetch_contigs.py "Valid email id" "NCBI api_key" "Genus name" "Spe
 
 Given a directory of zipped (.gz) assembly files, the script reads each assembly file and embedded fasta formatted contigs. The script subsequently calculates contig lengths and assembly specific N50 values. 
 
-Usage: python calculating_n50_assemblies.py
+Usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY  
 
-The program produces two output files. "*summary_concise.txt*" and "*summary_verbose.txt*". *summary_concise.txt* prints assembly name with N50 values:
+The program needs two arguments corresponding to input directory containing zipped assembly files and output directory to write two output files: "*summary_concise.txt*" and "*summary_verbose.txt*". *summary_concise.txt* prints assembly name with N50 values:  
 
 N50 length for assembly RSZF02 is 91963   
 N50 length for assembly RTBZ02 is 71579   
