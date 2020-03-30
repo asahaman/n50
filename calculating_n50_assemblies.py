@@ -14,29 +14,28 @@ def main(in_dir = None, out_dir = None):
     fasta_ext = ['fasta','fna','ffn','faa','frn']
 
     switch = 'off'
-    global f
     for f_name in os.listdir(in_dir):
         if f_name.endswith('.gz'):
             array_f = f_name.split('.')
             if array_f[-2] in fasta_ext:
                 file = os.path.join(in_dir,f_name)
                 with gzip.open(file, mode = 'rt') as f:
-                    n50_calc()
+                    n50_calc(f)
                 switch = 'on'
         else:
             array_f = f_name.split('.')
             if array_f[-1] in fasta_ext:
                 file = os.path.join(in_dir,f_name)
                 with open(file, mode = 'r') as f:
-                    n50_calc()
+                    n50_calc(f)
                 switch = 'on'
 
     if switch == 'off':
         sys.exit("No zipped or unzipped fasta assemblies are in the directory. Exiting..")
 
-def n50_calc():
+def n50_calc(y = None):
         contig_length_dict = {}
-        for line in f:
+        for line in y:
             assembly = re.findall(r'^>([A-Z]+?0\d).+',line)
             if len(assembly) > 0:
                 assembly_name = assembly[0] 
