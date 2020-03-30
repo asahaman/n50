@@ -9,8 +9,7 @@ def main(in_dir = None, out_dir = None):
         sys.exit("Input directory or path incorrect. Exiting..")
     if os.path.exists(out_dir) == False: 
         os.mkdir(out_dir)
-    global file_o
-    file_o = open(os.path.join(out_dir,'N50.txt'),'w')
+    output_file = open(os.path.join(out_dir,'N50.txt'),'w')
     fasta_ext = ['fasta','fna','ffn','faa','frn']
 
     switch = 'off'
@@ -19,23 +18,23 @@ def main(in_dir = None, out_dir = None):
             array_f = f_name.split('.')
             if array_f[-2] in fasta_ext:
                 file = os.path.join(in_dir,f_name)
-                with gzip.open(file, mode = 'rt') as f:
-                    n50_calc(f)
+                with gzip.open(file, mode = 'rt') as open_file:
+                    n50_calc(open_file, output_file)
                 switch = 'on'
         else:
             array_f = f_name.split('.')
             if array_f[-1] in fasta_ext:
                 file = os.path.join(in_dir,f_name)
-                with open(file, mode = 'r') as f:
-                    n50_calc(f)
+                with open(file, mode = 'r') as open_file:
+                    n50_calc(open_file, output_file)
                 switch = 'on'
 
     if switch == 'off':
         sys.exit("No zipped or unzipped fasta assemblies are in the directory. Exiting..")
 
-def n50_calc(y = None):
+def n50_calc(open_file = None, output_file = None):
         contig_length_dict = {}
-        for line in y:
+        for line in open_file:
             assembly = re.findall(r'^>([A-Z]+?0\d).+',line)
             if len(assembly) > 0:
                 assembly_name = assembly[0] 
@@ -56,7 +55,7 @@ def n50_calc(y = None):
         for item in rev_sorted_contig_length_dict:
             temp_sum += item[1]
             if temp_sum >= l50_len: 
-                file_o.write("{}\t{}\n".format(assembly_name, item[1]))
+                output_file.write("{}\t{}\n".format(assembly_name, item[1]))
                 break
 
 if __name__ == "__main__":
