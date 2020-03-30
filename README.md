@@ -11,27 +11,14 @@ Usage: python fetch_contigs.py "Valid email id" "NCBI api_key" "Genus name" "Spe
 
 **Exercise 2**: Python script for analyzing fasta assemblies and calculating N50 contig length
 
-Given a directory of zipped (.gz) assembly files, the script reads each assembly file and embedded fasta formatted contigs. The script subsequently calculates contig lengths and assembly specific N50 values. 
+Given a directory of fasta assembly files, the script reads each assembly file and embedded fasta formatted contigs to calculate N50 values. 
 
 Usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY  
 
-The program needs two arguments corresponding to input directory containing zipped assembly files and output directory to write two output files: "*summary_concise.txt*" and "*summary_verbose.txt*". *summary_concise.txt* prints assembly name with N50 values:  
-
-N50 length for assembly RSZF02 is 91963   
-N50 length for assembly RTBZ02 is 71579   
-N50 length for assembly RTFI02 is 93615   
-.......................................   
-.......................................   
-
-*summary_verbose.txt* prints file name, assembly name and every contig's name and length in the following form:  
-
-Opened file GCA_004160775.2_PDT000319866.2.fna.gz  
-File has assembly named AAAAOK02 with following contigs and respective lengths:   
-	AAAAOK020000001.1       237814   
-	AAAAOK020000002.1       174736   
-	AAAAOK020000003.1       165434   
-	..............................   
-	..............................   
-Assembly AAAAOK02 has 268 contigs   
-
-This information is printed for each assembly file   
+The program needs two arguments corresponding to input directory containing fasta assembly files and output directory where output file "N50.txt" is written with assembly name and N50 lengths in tab separated value format:   
+   
+RSZF02  91963   
+RTBZ02  71579   
+RTFI02  93615   
+..............
+.............. 
