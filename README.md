@@ -22,3 +22,8 @@ RTBZ02  71579
 RTFI02  93615   
 ..............
 ..............
+
+**Exercise 3**: Python script for calculating summary statistics of N50 and plotting its distribution   
+Extends exercise 2 by incorporating a function to calculate summary statistics using pandas.series.describe function.
+
+Usage: python n50_statistics.py INPUT_DIRECTORY OUTPUT_DIRECTORY  
