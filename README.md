@@ -13,6 +13,5 @@ Output/s: zipped fasta assembly files inside the output directory
 
 Given a directory of fasta assembly files, the script reads each assembly file and embedded fasta formatted contigs to calculate N50 values. Subsequently, calculates summary statistics using *pandas.Series.Describe* function and generates a histogram of N50 assembly lengths using *matplotlib* 
 
-Usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY  
-Output/s: *summary_statistics.txt* file containing summary statistics and *hist.pdf* plot showing histogram   
-
+Usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES 
+Output/s: *summary_statistics.txt* file containing summary statistics and *hist.pdf* plot showing N50 histogram of the organism name input via command line arguments

@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def main(in_dir = None, out_dir = None):
+def main(in_dir = None, out_dir = None, genus = None, species = None):
     if os.path.exists(in_dir) == False: 
         sys.exit("Input directory or path incorrect. Exiting..")
     if os.path.exists(out_dir) == False: 
@@ -34,7 +34,7 @@ def main(in_dir = None, out_dir = None):
         sys.exit("No zipped or unzipped fasta assemblies are in the directory. Exiting..")
                    
     else:
-        n50_summary(n50_array, n50_array_log, output_file, out_dir)
+        n50_summary(n50_array, n50_array_log, output_file, out_dir, genus, species)
 
 def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
     contig_length_dict = {}
@@ -42,7 +42,6 @@ def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
         x = re.findall(r'>(.+?)\s(.+?)\s(.+?)\s', line)
         if len(x) > 0:
             contig_name = x[0][0]
-            org_name = x[0][1]+" "+x[0][2]
             contig_length = 0
         else:
             contig_length += len(line.rstrip('\n'))
@@ -60,9 +59,8 @@ def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
             n50_array.append(item[1])
             n50_array_log.append(math.log(item[1],10))
             break
-    n50_calc.org_name = org_name
 
-def n50_summary(n50_array = None, n50_array_log = None, output_file = None, out_dir = None):    
+def n50_summary(n50_array = None, n50_array_log = None, output_file = None, out_dir = None, genus = None, species = None):    
     s = pd.Series(n50_array)
     output_file.write("Number of assemblies is {}\n".format(s.count()))
     output_file.write("Min and Max N50 values are {} and {}\n".format(s.min(),s.max()))
@@ -72,15 +70,17 @@ def n50_summary(n50_array = None, n50_array_log = None, output_file = None, out_
     plt.hist(n50_array_log, bins = 100, color='green')
     plt.xlabel('Log (base 10) N50 values')
     plt.ylabel('Counts')
-    plt.title('Histogram of '+ n50_calc.org_name+ ' assembly lengths')
+    plt.title('Histogram of '+ genus + ' '+ species + ' assembly lengths')
     plt.savefig(os.path.join(out_dir,'hist.pdf'))
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 5:
         sys.exit("""
-Command usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY
-Need to pass 2 arguments corresponding to input directory containing fasta assembly files
-and output directory where output file "N50.txt" is written.
+Command usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES
+Need to pass 4 arguments corresponding to input directory containing fasta assembly files, custom output directory and genus and species name of the organism.
 """)
-    in_dir = sys.argv[1]; out_dir = sys.argv[2]
-    main(in_dir, out_dir)
+    in_dir = sys.argv[1] 
+    out_dir = sys.argv[2]
+    genus = sys.argv[3]
+    species = sys.argv[4]
+    main(in_dir, out_dir, genus, species)
