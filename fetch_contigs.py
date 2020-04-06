@@ -3,7 +3,7 @@ import os
 import urllib.request
 from Bio import Entrez
 
-def main(email = None, api_key = None, genus = None, species = None, retmax = None):
+def main(email = None, api_key = None, genus = None, species = None, retmax = None, out_dir = None):
     Entrez.email = email
     Entrez.api_key = api_key
     handle = Entrez.esearch(db= "assembly", term= genus+" "+species+"[Organism] AND contig[Assembly Level]", retmax = num)
@@ -13,6 +13,8 @@ def main(email = None, api_key = None, genus = None, species = None, retmax = No
         sys.exit("Incorrect organism name. Check for spelling, indentation.")
 
     else:
+        if os.path.exists(out_dir) == False:
+            os.mkdir(out_dir)
         handle1 = Entrez.esummary(db="assembly", id = ",".join(record['IdList']))
         record1 = Entrez.read(handle1)
         assembly_count = 0
@@ -21,17 +23,18 @@ def main(email = None, api_key = None, genus = None, species = None, retmax = No
             url = record1['DocumentSummarySet']['DocumentSummary'][i]['FtpPath_GenBank']
             file_name = os.path.basename(url)
             link = os.path.join(url,file_name+'_genomic.fna.gz')
+            full_file_path = os.path.join(out_dir,f'{file_name}.fna.gz')
             print(f'{file_name}.fna.gz' +" downloaded")
             assembly_count += 1
-            urllib.request.urlretrieve(link, f'{file_name}.fna.gz')
+            urllib.request.urlretrieve(link, full_file_path)
 
-        print ("Total {} assemblies downloaded".format(assembly_count))            
+        print ("Total {} assemblies downloaded to {}".format(assembly_count, out_dir))            
 
 if __name__ == "__main__":
-    if len(sys.argv) != 6:
+    if len(sys.argv) != 7:
         sys.exit("""
-Command usage: python fetch_contigs.py EMAIL NCBI_API_KEY GENUS_NAME SPECIES_NAME NUM_CONTIGS
-Need to pass 5 arguments corresponding to your email, your ncbi api key, a genus and species name (e.g. Salmonella enterica) and the number of contig assemblies you want to download.
+Command usage: python fetch_contigs.py EMAIL NCBI_API_KEY GENUS_NAME SPECIES_NAME NUM_CONTIGS OUTPUT_DIRECTORY
+Need to pass 6 arguments corresponding to your email, your ncbi api key, a genus and species name (e.g. Salmonella enterica), the number of contig assemblies you want to download and an output directory to download the assembly files.
 If you are not sure how to obtain an NCBI api key, please refer to the README document. 
 """)
     
@@ -40,5 +43,6 @@ If you are not sure how to obtain an NCBI api key, please refer to the README do
     genus = sys.argv[3]
     species = sys.argv[4]
     num = sys.argv[5]
+    out_dir = sys.argv[6]
 
-    main(email, api_key, genus, species, num)
+    main(email, api_key, genus, species, num, out_dir)
