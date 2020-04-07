@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+import n50
+print n50.fetch_contigs.main()
+print n50.calculating_n50_assemblies.main()
