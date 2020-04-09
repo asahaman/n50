@@ -20,7 +20,6 @@ setup(name='n50',
       author_email='arnab.sahamandal@umanitoba.ca',
       license='MIT',
       packages=['n50'],
-      scripts=['bin/n50-assembly'],
       install_requires=[
           'biopython','markdown'
       ],

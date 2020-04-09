@@ -3,7 +3,7 @@ import os
 import urllib.request
 from Bio import Entrez
 
-def main(email = None, api_key = None, genus = None, species = None, retmax = None, out_dir = None):
+def main(email = None, api_key = None, genus = None, species = None, num = None, out_dir = None):
     Entrez.email = email
     Entrez.api_key = api_key
     handle = Entrez.esearch(db= "assembly", term= genus+" "+species+"[Organism] AND contig[Assembly Level]", retmax = num)
