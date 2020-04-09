@@ -4,37 +4,48 @@ import operator
 import sys
 import os
 import fnmatch
-import statistics
 import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def main(in_dir = None, out_dir = None, genus = None, species = None):
-    if os.path.exists(in_dir) == False: 
-        sys.exit("Input directory or path incorrect. Exiting..")
-    if os.path.exists(out_dir) == False: 
-        os.mkdir(out_dir)
-    output_file = open(os.path.join(out_dir,'summary_statistics.txt'),'w')
-    fasta_ext = ['fasta','fna','ffn','faa','frn']
-    n50_array = [] 
-    n50_array_log = []
-    for f_name in os.listdir(in_dir):
-        if fnmatch.fnmatch(f_name, '*.*'):
-            array_f = f_name.split('.')
-            file = os.path.join(in_dir,f_name)
-            if (array_f[-1] == 'gz' and array_f[-2] in fasta_ext):
-                with gzip.open(file, mode = 'rt') as open_file:
-                    n50_calc(open_file, n50_array, n50_array_log)
-            elif array_f[-1] in fasta_ext:
-                with open(file, mode = 'r') as open_file:
-                    n50_calc(open_file, n50_array, n50_array_log)
-                   
-    if not n50_array:
-        sys.exit("No zipped or unzipped fasta assemblies are in the directory. Exiting..")
-                   
+def main():
+    if len(sys.argv) != 5:
+        sys.exit("""
+Command usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES
+Need to pass 4 arguments corresponding to input directory containing fasta assembly files, custom output directory and genus and species name of the organism.
+""")
+
     else:
-        n50_summary(n50_array, n50_array_log, output_file, out_dir, genus, species)
+        in_dir = sys.argv[1] 
+        out_dir = sys.argv[2]
+        genus = sys.argv[3]
+        species = sys.argv[4]
+        
+        if os.path.exists(in_dir) == False: 
+            sys.exit("Input directory or path incorrect. Exiting..")
+        if os.path.exists(out_dir) == False: 
+            os.mkdir(out_dir)
+        output_file = open(os.path.join(out_dir,'summary_statistics.txt'),'w')
+        fasta_ext = ['fasta','fna','ffn','faa','frn']
+        n50_array = [] 
+        n50_array_log = []
+        for f_name in os.listdir(in_dir):
+            if fnmatch.fnmatch(f_name, '*.*'):
+                array_f = f_name.split('.')
+                file = os.path.join(in_dir,f_name)
+                if (array_f[-1] == 'gz' and array_f[-2] in fasta_ext):
+                    with gzip.open(file, mode = 'rt') as open_file:
+                        n50_calc(open_file, n50_array, n50_array_log)
+                elif array_f[-1] in fasta_ext:
+                    with open(file, mode = 'r') as open_file:
+                        n50_calc(open_file, n50_array, n50_array_log)
+                    
+        if not n50_array:
+            sys.exit("No zipped or unzipped fasta assemblies are in the directory. Exiting..")
+                    
+        else:
+            n50_summary(n50_array, n50_array_log, output_file, out_dir, genus, species)
 
 def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
     contig_length_dict = {}
@@ -74,13 +85,4 @@ def n50_summary(n50_array = None, n50_array_log = None, output_file = None, out_
     plt.savefig(os.path.join(out_dir,'hist.pdf'))
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        sys.exit("""
-Command usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES
-Need to pass 4 arguments corresponding to input directory containing fasta assembly files, custom output directory and genus and species name of the organism.
-""")
-    in_dir = sys.argv[1] 
-    out_dir = sys.argv[2]
-    genus = sys.argv[3]
-    species = sys.argv[4]
-    main(in_dir, out_dir, genus, species)
+    main()
