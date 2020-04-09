@@ -24,6 +24,8 @@ setup(name='n50',
           'biopython','markdown'
       ],
       entry_points = {
-        'console_scripts': ['n50-main=n50.command_line:main'],
+        'console_scripts': ['contig_dnld=n50.fetch_contigs:main',
+                            'contig_n50=n50.calculating_n50_assemblies:main'
+                          ],
       },
       zip_safe=False)
