@@ -23,4 +23,7 @@ setup(name='n50',
       install_requires=[
           'biopython','markdown'
       ],
+      entry_points = {
+        'console_scripts': ['n50-main=n50.command_line:main'],
+      },
       zip_safe=False)
