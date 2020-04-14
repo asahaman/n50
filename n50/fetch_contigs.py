@@ -6,7 +6,7 @@ from Bio import Entrez
 def main():
     if len(sys.argv) != 7:
         sys.exit("""
-Command usage: python fetch_contigs.py EMAIL NCBI_API_KEY GENUS_NAME SPECIES_NAME NUM_CONTIGS OUTPUT_DIRECTORY
+Command usage: contig_dnld EMAIL NCBI_API_KEY GENUS_NAME SPECIES_NAME NUM_CONTIGS OUTPUT_DIRECTORY
 Need to pass 6 arguments corresponding to your email, your ncbi api key, a genus and species name (e.g. Salmonella enterica), the number of contig assemblies you want to download and an output directory to download the assembly files.
 If you are not sure how to obtain an NCBI api key, please refer to the README document. 
 """)

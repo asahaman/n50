@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 def main():
     if len(sys.argv) != 5:
         sys.exit("""
-Command usage: python calculating_n50_assemblies.py INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES
+Command usage: contig_n50 INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES
 Need to pass 4 arguments corresponding to input directory containing fasta assembly files, custom output directory and genus and species name of the organism.
 """)
 
