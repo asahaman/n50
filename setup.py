@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='n50',
-      version='1.0',
+      version='0.1.0',
       description='N50 calculation from bacterial assemblies',
       long_description=readme(),
       classifiers=[
