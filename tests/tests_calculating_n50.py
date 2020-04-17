@@ -14,4 +14,4 @@ for f_name in os.listdir():
         with open(file, mode = 'r') as open_file:
             n50_calc(open_file, n50_obtained, n50_obtained_log)
 
-np.testing.assert_array_equal(n50_expected, n50_obtained)
+assert n50_expected == n50_obtained
