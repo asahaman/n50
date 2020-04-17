@@ -50,9 +50,9 @@ Need to pass 4 arguments corresponding to input directory containing fasta assem
 def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
     contig_length_dict = {}
     for line in open_file:
-        x = re.findall(r'>(.+?)\s(.+?)\s(.+?)\s', line)
+        x = re.findall(r'>(.+?)\s.+', line)
         if len(x) > 0:
-            contig_name = x[0][0]
+            contig_name = x[0]
             contig_length = 0
         else:
             contig_length += len(line.rstrip('\n'))

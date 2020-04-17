@@ -1,2 +1,13 @@
+#Zipped or text files
 *.gz
 *.txt
+
+#fasta files
+*.fasta
+*.fna
+*.ffn
+*.faa
+*.frn
+
+#Swaps
+*.swp
