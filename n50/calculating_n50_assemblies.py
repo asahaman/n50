@@ -9,43 +9,48 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def main():
-    if len(sys.argv) != 5:
-        sys.exit("""
-Command usage: contig_n50 INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES
-Need to pass 4 arguments corresponding to input directory containing fasta assembly files, custom output directory and genus and species name of the organism.
-""")
-
+def input_dir_check(in_dir = None):
+    if os.path.exists(in_dir):
+        return True
     else:
-        in_dir = sys.argv[1] 
-        out_dir = sys.argv[2]
-        genus = sys.argv[3]
-        species = sys.argv[4]
-        
-        if os.path.exists(in_dir) == False: 
-            sys.exit("Input directory or path incorrect. Exiting..")
-        if os.path.exists(out_dir) == False: 
-            os.mkdir(out_dir)
-        output_file = open(os.path.join(out_dir,'summary_statistics.txt'),'w')
-        fasta_ext = ['fasta','fna','ffn','faa','frn']
-        n50_array = [] 
-        n50_array_log = []
-        for f_name in os.listdir(in_dir):
-            if fnmatch.fnmatch(f_name, '*.*'):
-                array_f = f_name.split('.')
-                file = os.path.join(in_dir,f_name)
-                if (array_f[-1] == 'gz' and array_f[-2] in fasta_ext):
-                    with gzip.open(file, mode = 'rt') as open_file:
-                        n50_calc(open_file, n50_array, n50_array_log)
-                elif array_f[-1] in fasta_ext:
-                    with open(file, mode = 'r') as open_file:
-                        n50_calc(open_file, n50_array, n50_array_log)
-                    
-        if not n50_array:
-            sys.exit("No zipped or unzipped fasta assemblies are in the directory. Exiting..")
-                    
+        return False
+    
+def output_dir_check(out_dir = None):
+    if os.path.exists(out_dir): 
+        return True
+    else:
+        os.mkdir(out_dir)
+        return False
+
+def input_dir_empty_check(in_dir = None):
+    if os.listdir(in_dir):
+        return True
+    else:
+        return False
+
+def fasta_file_check(in_dir = None):
+    f_name_list = []
+    fasta_ext = ['fasta','fna','ffn','faa','frn']
+    for f_name in os.listdir(in_dir):
+        if fnmatch.fnmatch(f_name, '*.*'):
+            array_f = f_name.split('.')
+            if (array_f[-1] in fasta_ext or array_f[-2] in fasta_ext):
+                f_name_list.append(f_name)
+    return f_name_list
+
+def file_opener(in_dir = None, f_name_list = None):
+    n50_array = []
+    n50_array_log = []
+    for file_entry in f_name_list:
+        file = os.path.join(in_dir,file_entry)
+        array_f = file_entry.split('.')
+        if (array_f[-1] == 'gz'):
+            with gzip.open(file, mode = 'rt') as open_file:
+                n50_calc(open_file, n50_array, n50_array_log)
         else:
-            n50_summary(n50_array, n50_array_log, output_file, out_dir, genus, species)
+            with open(file, mode = 'r') as open_file:
+                n50_calc(open_file, n50_array, n50_array_log)
+    return n50_array, n50_array_log
 
 def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
     contig_length_dict = {}
@@ -71,7 +76,8 @@ def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
             n50_array_log.append(math.log(item[1],10))
             break
 
-def n50_summary(n50_array = None, n50_array_log = None, output_file = None, out_dir = None, genus = None, species = None):    
+def n50_summary(n50_array = None, n50_array_log = None, out_dir = None, genus = None, species= None):
+    output_file = open(os.path.join(out_dir,'summary_statistics.txt'),'w')
     s = pd.Series(n50_array)
     output_file.write("Number of assemblies is {}\n".format(s.count()))
     output_file.write("Min and Max N50 values are {} and {}\n".format(s.min(),s.max()))
@@ -83,6 +89,47 @@ def n50_summary(n50_array = None, n50_array_log = None, output_file = None, out_
     plt.ylabel('Counts')
     plt.title('Histogram of '+ genus + ' '+ species + ' assembly lengths')
     plt.savefig(os.path.join(out_dir,'hist.pdf'))
+    return True
+
+def main():
+    if len(sys.argv) != 5:
+        sys.exit("""
+Command usage: contig_n50 INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES
+Need to pass 4 arguments corresponding to input directory containing fasta assembly files, custom output directory and genus and species name of the organism.
+""")
+
+    in_dir = sys.argv[1]
+    out_dir = sys.argv[2]
+    genus = sys.argv[3]
+    species = sys.argv[4]
+
+    if input_dir_check(in_dir):
+        print ("Input directory exists, lets look inside...")
+        if input_dir_empty_check(in_dir):
+            print ("Input directory has some files. Lets look at the files...")
+            if fasta_file_check(in_dir):
+                print("Input directory has fasta files. We can proceed...")
+                file_list = fasta_file_check(in_dir)
+                if output_dir_check(out_dir):
+                    print ("Output dir exists, files can be written")
+                else:
+                    print ("Output dir does not exist. new created...")
+                if file_list:
+                    arr1, arr2 = file_opener(in_dir,file_list)
+                    if (arr1, arr2):
+                        n50_summary(arr1, arr2, out_dir, genus, species)
+                        if n50_summary(arr1, arr2, out_dir, genus, species):
+                            print ("Hooray! you have calculated n50 summary statistics and plotted a histogram..")
+                        else:
+                            print ("n50 values have been calculated but statistics cant be computed")
+                    else:
+                        sys.exit("Something is wrong with the fasta files...exiting..")
+            else:
+                sys.exit("There isnt any fasta file in input directory to work with..exiting..")
+        else: 
+            sys.exit("Input directory is empty..exiting..")
+    else:
+        sys.exit ("Incorrect input directory..exiting..")
 
 if __name__ == "__main__":
     main()
