@@ -38,7 +38,7 @@ def fasta_file_check(in_dir = None):
                 f_name_list.append(f_name)
     return f_name_list
 
-def file_opener(in_dir = None, f_name_list = None):
+def n50_wrapper(in_dir = None, f_name_list = None):
     n50_array = []
     n50_array_log = []
     for file_entry in f_name_list:
@@ -46,23 +46,36 @@ def file_opener(in_dir = None, f_name_list = None):
         array_f = file_entry.split('.')
         if (array_f[-1] == 'gz'):
             with gzip.open(file, mode = 'rt') as open_file:
-                n50_calc(open_file, n50_array, n50_array_log)
+                #if good_fasta_check(open_file):
+                    n50_calc(open_file, n50_array, n50_array_log)
         else:
             with open(file, mode = 'r') as open_file:
-                n50_calc(open_file, n50_array, n50_array_log)
+                #if good_fasta_check(open_file):
+                    n50_calc(open_file, n50_array, n50_array_log)
     return n50_array, n50_array_log
+
+def good_fasta_check(open_file = None):
+    fasta_check = []
+    for line in open_file:
+        if re.search(r'^>.+', line) != None or re.search(r'^[ATGCN-]+$', line) != None:
+            pass
+        else:
+            fasta_check.append(1)
+    if not fasta_check:
+        return True
+    else:
+        return False
 
 def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
     contig_length_dict = {}
     for line in open_file:
-        x = re.findall(r'>(.+?)\s.+', line)
+        x = re.findall(r'>(.+?)\s.*', line)
         if len(x) > 0:
             contig_name = x[0]
             contig_length = 0
         else:
             contig_length += len(line.rstrip('\n'))
             contig_length_dict[contig_name] = contig_length
-
     total_assembly_len = 0
     for key in contig_length_dict:
         total_assembly_len += contig_length_dict[key]
@@ -115,7 +128,7 @@ Need to pass 4 arguments corresponding to input directory containing fasta assem
                 else:
                     print ("Output dir does not exist. new created...")
                 if file_list:
-                    arr1, arr2 = file_opener(in_dir,file_list)
+                    arr1, arr2 = n50_wrapper(in_dir,file_list)
                     if (arr1, arr2):
                         n50_summary(arr1, arr2, out_dir, genus, species)
                         if n50_summary(arr1, arr2, out_dir, genus, species):

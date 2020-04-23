@@ -11,3 +11,6 @@
 
 #Swaps
 *.swp
+
+#test data files
+tests/data*
