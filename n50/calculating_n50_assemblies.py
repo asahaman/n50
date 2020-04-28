@@ -28,7 +28,7 @@ def input_dir_empty_check(in_dir = None):
     else:
         return False
 
-def fasta_file_check(in_dir = None):
+def fasta_extn_check(in_dir = None):
     f_name_list = []
     fasta_ext = ['fasta','fna','ffn','faa','frn']
     for f_name in os.listdir(in_dir):
@@ -38,56 +38,52 @@ def fasta_file_check(in_dir = None):
                 f_name_list.append(f_name)
     return f_name_list
 
-def n50_wrapper(in_dir = None, f_name_list = None):
-    n50_array = []
-    n50_array_log = []
+def contigs_len_calc(open_file = None, contig_dict_ok = None):
+    contig_dict = {}
+    for line in open_file:
+        x = re.match(r'^>(.+?)\s.*', line)
+        y = re.match(r'^[ATGCN-]+$', line)
+        if x != None:
+            contig = x.group(1)
+            contig_dict[contig] = 0
+        elif y != None:
+            contig_dict[contig] += len(y[0].rstrip('\n'))
+    for key, value in contig_dict.items():
+        if value != 0:
+            contig_dict_ok[key] = value
+    return contig_dict_ok
+
+def assembly_len_calc(in_dir = None, f_name_list = None):
+    ass_len_list = []
     for file_entry in f_name_list:
         file = os.path.join(in_dir,file_entry)
         array_f = file_entry.split('.')
+        contig_dict_ok = {}
         if (array_f[-1] == 'gz'):
             with gzip.open(file, mode = 'rt') as open_file:
-                #if good_fasta_check(open_file):
-                    n50_calc(open_file, n50_array, n50_array_log)
+                ass_len_list.append(contigs_len_calc(open_file, contig_dict_ok)) 
         else:
             with open(file, mode = 'r') as open_file:
-                #if good_fasta_check(open_file):
-                    n50_calc(open_file, n50_array, n50_array_log)
+                ass_len_list.append(contigs_len_calc(open_file, contig_dict_ok))
+    return ass_len_list
+            
+def n50_calc(ass_len_list = None):
+    n50_array = []
+    n50_array_log = []
+    for ass in ass_len_list:
+        total_assembly_len = 0
+        for key in ass:
+            total_assembly_len += ass[key]
+        l50_len = total_assembly_len/2
+        rev_sorted_contig_dict = sorted(ass.items(), key=operator.itemgetter(1),reverse=True)
+        temp_sum = 0
+        for item in rev_sorted_contig_dict:
+            temp_sum += item[1]
+            if temp_sum >= l50_len: 
+                n50_array.append(item[1])
+                n50_array_log.append(math.log(item[1],10))
+                break
     return n50_array, n50_array_log
-
-def good_fasta_check(open_file = None):
-    fasta_check = []
-    for line in open_file:
-        if re.search(r'^>.+', line) != None or re.search(r'^[ATGCN-]+$', line) != None:
-            pass
-        else:
-            fasta_check.append(1)
-    if not fasta_check:
-        return True
-    else:
-        return False
-
-def n50_calc(open_file = None, n50_array = None, n50_array_log = None):
-    contig_length_dict = {}
-    for line in open_file:
-        x = re.findall(r'>(.+?)\s.*', line)
-        if len(x) > 0:
-            contig_name = x[0]
-            contig_length = 0
-        else:
-            contig_length += len(line.rstrip('\n'))
-            contig_length_dict[contig_name] = contig_length
-    total_assembly_len = 0
-    for key in contig_length_dict:
-        total_assembly_len += contig_length_dict[key]
-    l50_len = total_assembly_len/2
-    rev_sorted_contig_length_dict = sorted(contig_length_dict.items(), key=operator.itemgetter(1),reverse=True)
-    temp_sum = 0
-    for item in rev_sorted_contig_length_dict:
-        temp_sum += item[1]
-        if temp_sum >= l50_len: 
-            n50_array.append(item[1])
-            n50_array_log.append(math.log(item[1],10))
-            break
 
 def n50_summary(n50_array = None, n50_array_log = None, out_dir = None, genus = None, species= None):
     output_file = open(os.path.join(out_dir,'summary_statistics.txt'),'w')
@@ -120,23 +116,31 @@ Need to pass 4 arguments corresponding to input directory containing fasta assem
         print ("Input directory exists, lets look inside...")
         if input_dir_empty_check(in_dir):
             print ("Input directory has some files. Lets look at the files...")
-            if fasta_file_check(in_dir):
+            if fasta_extn_check(in_dir):
                 print("Input directory has fasta files. We can proceed...")
-                file_list = fasta_file_check(in_dir)
-                if output_dir_check(out_dir):
-                    print ("Output dir exists, files can be written")
-                else:
-                    print ("Output dir does not exist. new created...")
+                file_list = fasta_extn_check(in_dir)
                 if file_list:
-                    arr1, arr2 = n50_wrapper(in_dir,file_list)
-                    if (arr1, arr2):
-                        n50_summary(arr1, arr2, out_dir, genus, species)
-                        if n50_summary(arr1, arr2, out_dir, genus, species):
-                            print ("Hooray! you have calculated n50 summary statistics and plotted a histogram..")
+                    ass_len_list = assembly_len_calc(in_dir,file_list)
+                    if ass_len_list:
+                        print("Some (or all) fasta files have non-zero nucleotide sequences")
+                        arr1, arr2 = n50_calc(ass_len_list)
+                        if (arr1, arr2):
+                            print("n50 lengths of assemblies have been calculated")
+                            if output_dir_check(out_dir):
+                                print ("Output dir exists, files can be written")
+                            else:
+                                print ("Output dir does not exist. new created...")
+
+                            n50_summary(arr1, arr2, out_dir, genus, species)
+
+                            if n50_summary(arr1, arr2, out_dir, genus, species):
+                                print ("Hooray! you have calculated n50 summary statistics and plotted a histogram..")
+                            else:
+                                print ("n50 values have been calculated but statistics cant be computed")
                         else:
-                            print ("n50 values have been calculated but statistics cant be computed")
+                            sys.exit("Something is wrong with the fasta files...exiting..")
                     else:
-                        sys.exit("Something is wrong with the fasta files...exiting..")
+                        sys.exit("The fasta files may not have nucleotide sequences of non-zero lengths")
             else:
                 sys.exit("There isnt any fasta file in input directory to work with..exiting..")
         else: 
