@@ -122,7 +122,7 @@ Need to pass 4 arguments corresponding to input directory containing fasta assem
                 if file_list:
                     ass_len_list = assembly_len_calc(in_dir,file_list)
                     if ass_len_list:
-                        print("Some (or all) fasta files have non-zero nucleotide sequences")
+                        print("Some (or all) fasta assemblies have non-zero nucleotide sequences")
                         arr1, arr2 = n50_calc(ass_len_list)
                         if (arr1, arr2):
                             print("n50 lengths of assemblies have been calculated")
