@@ -81,7 +81,7 @@ def n50_calc(ass_len_list = None):
             temp_sum += item[1]
             if temp_sum >= l50_len: 
                 n50_array.append(item[1])
-                n50_array_log.append(math.log(item[1],10))
+                n50_array_log.append(round(math.log(item[1],10), 3))
                 break
     return n50_array, n50_array_log
 
