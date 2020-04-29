@@ -47,11 +47,20 @@ def contigs_len_calc(open_file = None, contig_dict_ok = None):
             contig = x.group(1)
             contig_dict[contig] = 0
         elif y != None:
-            contig_dict[contig] += len(y[0].rstrip('\n'))
+            try:
+                contig_dict[contig] += len(y[0].rstrip('\n'))
+            except UnboundLocalError:
+                '''
+                This is a case of orphaned nucleotide sequences
+                without a legit > fasta header. Those sequences
+                will be ignored and not added to contig dictionary
+                '''
+                pass
     for key, value in contig_dict.items():
         if value != 0:
             contig_dict_ok[key] = value
-    return contig_dict_ok
+    if contig_dict_ok:
+        return contig_dict_ok
 
 def assembly_len_calc(in_dir = None, f_name_list = None):
     ass_len_list = []
@@ -61,10 +70,12 @@ def assembly_len_calc(in_dir = None, f_name_list = None):
         contig_dict_ok = {}
         if (array_f[-1] == 'gz'):
             with gzip.open(file, mode = 'rt') as open_file:
-                ass_len_list.append(contigs_len_calc(open_file, contig_dict_ok)) 
+                if contigs_len_calc(open_file, contig_dict_ok):
+                    ass_len_list.append(contigs_len_calc(open_file, contig_dict_ok)) 
         else:
             with open(file, mode = 'r') as open_file:
-                ass_len_list.append(contigs_len_calc(open_file, contig_dict_ok))
+                if contigs_len_calc(open_file, contig_dict_ok):
+                    ass_len_list.append(contigs_len_calc(open_file, contig_dict_ok))
     return ass_len_list
             
 def n50_calc(ass_len_list = None):
@@ -86,19 +97,31 @@ def n50_calc(ass_len_list = None):
     return n50_array, n50_array_log
 
 def n50_summary(n50_array = None, n50_array_log = None, out_dir = None, genus = None, species= None):
+    
     output_file = open(os.path.join(out_dir,'summary_statistics.txt'),'w')
     s = pd.Series(n50_array)
+    summary_list = [ 
+        s.count(), 
+        s.min(), s.max(), 
+        round(s.mean(),3),
+        s.median(), 
+        round(s.std(),3)
+    ]
+    
     output_file.write("Number of assemblies is {}\n".format(s.count()))
     output_file.write("Min and Max N50 values are {} and {}\n".format(s.min(),s.max()))
-    output_file.write("Mean of N50 distribution is {:.3f}\n".format(s.mean()))
+    output_file.write("Mean of N50 distribution is {}\n".format(round(s.mean(),3)))
     output_file.write("Median of N50 distribution is {}\n".format(s.median()))
-    output_file.write("Standard deviation of N50 distribution is {:.3f}\n".format(s.std()))
-    plt.hist(n50_array_log, bins = 100, color='green')
-    plt.xlabel('Log (base 10) N50 values')
-    plt.ylabel('Counts')
-    plt.title('Histogram of '+ genus + ' '+ species + ' assembly lengths')
-    plt.savefig(os.path.join(out_dir,'hist.pdf'))
-    return True
+    output_file.write("Standard deviation of N50 distribution is {}\n".format(round(s.std(),3)))
+
+    if plt.hist(n50_array_log, bins = 100, color='green'):
+        plt.xlabel('Log (base 10) N50 values')
+        plt.ylabel('Counts')
+        plt.title('Histogram of '+ genus + ' '+ species + ' assembly lengths')
+        plt.savefig(os.path.join(out_dir,'hist.pdf'))
+        summary_list.append('histogram '+ genus + ' ' + species + ' generated')
+     
+    return summary_list
 
 def main():
     if len(sys.argv) != 5:
@@ -119,28 +142,23 @@ Need to pass 4 arguments corresponding to input directory containing fasta assem
             if fasta_extn_check(in_dir):
                 print("Input directory has fasta files. We can proceed...")
                 file_list = fasta_extn_check(in_dir)
-                if file_list:
-                    ass_len_list = assembly_len_calc(in_dir,file_list)
-                    if ass_len_list:
-                        print("Some (or all) fasta assemblies have non-zero nucleotide sequences")
-                        arr1, arr2 = n50_calc(ass_len_list)
-                        if (arr1, arr2):
-                            print("n50 lengths of assemblies have been calculated")
-                            if output_dir_check(out_dir):
-                                print ("Output dir exists, files can be written")
-                            else:
-                                print ("Output dir does not exist. new created...")
-
-                            n50_summary(arr1, arr2, out_dir, genus, species)
-
-                            if n50_summary(arr1, arr2, out_dir, genus, species):
-                                print ("Hooray! you have calculated n50 summary statistics and plotted a histogram..")
-                            else:
-                                print ("n50 values have been calculated but statistics cant be computed")
-                        else:
-                            sys.exit("Something is wrong with the fasta files...exiting..")
+                print(file_list)
+                ass_len_list = assembly_len_calc(in_dir,file_list)
+                if ass_len_list:
+                    print(ass_len_list)
+                    print("At least one fasta assembly has valid header/s and non-zero nucleotide sequences")
+                    arr1, arr2 = n50_calc(ass_len_list)
+                    print(arr1, arr2)
+                    print("n50 lengths of assemblies have been calculated")
+                    if output_dir_check(out_dir):
+                        print ("Output dir exists, files can be written")
                     else:
-                        sys.exit("The fasta files may not have nucleotide sequences of non-zero lengths")
+                        print ("Output dir does not exist. new created...")
+                    n50_summary(arr1, arr2, out_dir, genus, species)
+                    print(n50_summary(arr1, arr2, out_dir, genus, species))
+                    print ("Hooray! you have calculated n50 summary statistics and plotted a histogram..")
+                else:
+                    sys.exit("No fasta file is valid. Absent headers or nucleoties..exiting..")
             else:
                 sys.exit("There isnt any fasta file in input directory to work with..exiting..")
         else: 
