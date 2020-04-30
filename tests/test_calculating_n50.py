@@ -1,7 +1,8 @@
-from calculating_n50_assemblies import \
+from n50.calculating_n50_assemblies import \
     input_dir_check, output_dir_check, input_dir_empty_check, \
     fasta_extn_check, contigs_len_calc, assembly_len_calc, \
     n50_calc, n50_summary
+
 import sys
 import os
 import gzip
@@ -89,22 +90,32 @@ def test_fasta_extn_check_false():
 
 def test_assembly_len_calc_true():
     expected_assembly = test_ass_list
-    method_assembly = assembly_len_calc(TEST_INPUT_DIR,test_ass_list)
+    method_assembly = assembly_len_calc(TEST_INPUT_DIR,test_file_list)
     assert expected_assembly == method_assembly
 
 def test_assembly_len_calc_false():
-    test_ass_list_false = test_ass_list[1:]
-    method_assembly = assembly_len_calc(TEST_INPUT_DIR,test_ass_list)
-    assert test_ass_list_false != method_assembly
+    false_assembly = test_ass_list[1:]
+    method_assembly = assembly_len_calc(TEST_INPUT_DIR,test_file_list)
+    assert false_assembly!= method_assembly
 
-def test_n50_calc():
+def test_n50_calc_true():
     expected_tuple = test_n50_tuple
     method_tuple = n50_calc(test_ass_list)
     assert expected_tuple == method_tuple
-print(n50_summary(test_n50_tuple[0],test_n50_tuple[1],TEST_INPUT_DIR,'A','Histogram'))
 
-def test_n50_summary():
+def test_n50_calc_false():
+    t1 = test_n50_tuple[0][1:]
+    t2 = test_n50_tuple[1][1:]
+    false_tuple = (t1,t2)
+    method_tuple = n50_calc(test_ass_list)
+    assert false_tuple != method_tuple
+
+def test_n50_summary_true():
     expected_list = test_summary_list
     method_list = n50_summary(test_n50_tuple[0],test_n50_tuple[1],TEST_INPUT_DIR,'desired','organism')
     assert expected_list == method_list
 
+def test_n50_summary_false():
+    false_summary_list = test_summary_list[:-1]
+    method_list = n50_summary(test_n50_tuple[0],test_n50_tuple[1],TEST_INPUT_DIR,'desired','organism')
+    assert false_summary_list != method_list

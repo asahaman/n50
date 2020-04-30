@@ -142,20 +142,16 @@ Need to pass 4 arguments corresponding to input directory containing fasta assem
             if fasta_extn_check(in_dir):
                 print("Input directory has fasta files. We can proceed...")
                 file_list = fasta_extn_check(in_dir)
-                print(file_list)
                 ass_len_list = assembly_len_calc(in_dir,file_list)
                 if ass_len_list:
-                    print(ass_len_list)
                     print("At least one fasta assembly has valid header/s and non-zero nucleotide sequences")
                     arr1, arr2 = n50_calc(ass_len_list)
-                    print(arr1, arr2)
                     print("n50 lengths of assemblies have been calculated")
                     if output_dir_check(out_dir):
                         print ("Output dir exists, files can be written")
                     else:
                         print ("Output dir does not exist. new created...")
                     n50_summary(arr1, arr2, out_dir, genus, species)
-                    print(n50_summary(arr1, arr2, out_dir, genus, species))
                     print ("Hooray! you have calculated n50 summary statistics and plotted a histogram..")
                 else:
                     sys.exit("No fasta file is valid. Absent headers or nucleoties..exiting..")
