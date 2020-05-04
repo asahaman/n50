@@ -2,15 +2,5 @@
 *.gz
 *.txt
 
-#fasta files
-*.fasta
-*.fna
-*.ffn
-*.faa
-*.frn
-
 #Swaps
 *.swp
-
-#test data files
-tests/data*

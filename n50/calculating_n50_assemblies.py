@@ -6,7 +6,6 @@ import os
 import math
 import pandas as pd
 import matplotlib.pyplot as plt
-from fetch_contigs import valid_organism
 
 # Declaring global variables based on zipped or unzipped files
 GZ_TRUE = 1
@@ -112,7 +111,8 @@ def n50_stat_summary(n50_array=None, out_dir=None, genus=None, species=None):
     ".format(s.min(), s.max()))
     output_file.write("Mean of N50 distribution is {}\n \
     ".format(round(s.mean(), 3)))
-    output_file.write("Median of N50 distribution is {}\n".format(s.median()))
+    output_file.write("Median of N50 distribution is {}\n \
+    ".format(s.median()))
     output_file.write("Standard deviation of N50 distribution \
     is {}\n".format(round(s.std(), 3)))
     return summary_list
@@ -130,37 +130,58 @@ def n50_fig_summary(
     return plt
 
 
+# Checking if the user input organism name is ok
+def valid_organism_check(genus=None, species=None):
+    genus_chk = re.match(r'^[A-Z]([a-z]+$|$|\.$)', genus)
+    sp_chk = re.match(r'^[a-z]+$', species)
+    if genus_chk is None or sp_chk is None:
+        return False
+    else:
+        return True
+
+
 def main():
-    if len(sys.argv) != 6:
-        sys.exit("""
-Command usage: contig_n50 INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS SPECIES EMAIL
-Need to pass 5 arguments corresponding to input directory containing fasta
-assembly files, custom output directory, genus and species name of the
-organism and valid email address""")
+    if len(sys.argv) != 5:
+        sys.exit(
+            """
+            Command usage: contig_n50 INPUT_DIRECTORY OUTPUT_DIRECTORY GENUS
+            SPECIES
+            Need to pass 4 arguments corresponding to input directory
+            containing fasta assembly files, custom output directory, genus and
+            species name of the organism
+            """
+        )
     in_dir = sys.argv[1]
     out_dir = sys.argv[2]
     genus = sys.argv[3]
     species = sys.argv[4]
-    email = sys.argv[5]
     if not os.path.exists(in_dir):
         sys.exit("Incorrect input directory..exiting..")
     file_dic = fasta_extn_check(in_dir)
     assem_len_list = assembly_len_calc(in_dir, file_dic)
     n50, n50_log = n50_calc(assem_len_list)
-    if len(valid_organism(genus, species, 1, email)) > 0:
+    if valid_organism_check(genus, species):
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
         n50_stat_summary(n50, out_dir, genus, species)
         n50_fig_summary(n50_log, out_dir, genus, species)
-        print("""
-Hooray! you have calculated n50 summary statistics
-and plotted a histogram..""")
+        print(
+            """
+            Hooray! you have calculated n50 summary statistics
+            and plotted a histogram..
+            """
+        )
     else:
-        print("""
-Either entered organism name is incorrect or
-entrez query asssemblies are not available for the organism...
-Check NCBI's genome list catalogue at
-https://www.ncbi.nlm.nih.gov/genome/browse/#!/overview/""")
+        print(
+            """
+            User input organism name is incorrect.
+            Either input complete scientific name (e.g. Homo sapiens) or
+            closely related abbreviation (e.g. H sapiens, H. sapiens are
+            fine too). For an approximately complete list of organism names,
+            visit NCBI's genome list catalogue at
+            https://www.ncbi.nlm.nih.gov/genome/browse/#!/overview/
+            """
+        )
 
 
 if __name__ == "__main__":
