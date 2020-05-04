@@ -3,6 +3,13 @@ import os
 import urllib.request
 from Bio import Entrez
 
+def valid_organism(genus = None, species = None, num = None, email = None, api_key = None):
+    Entrez.email = email
+    Entrez.api_key = api_key
+    handle = Entrez.esearch(db= "assembly", term= genus+" "+species+"[Organism] AND contig[Assembly Level]", retmax = num)
+    record_list = Entrez.read(handle)['IdList']
+    return record_list
+
 def main():
     if len(sys.argv) != 7:
         sys.exit("""
@@ -12,17 +19,14 @@ If you are not sure how to obtain an NCBI api key, please refer to the README do
 """)
 
     else:
-        Entrez.email = sys.argv[1]
-        Entrez.api_key = sys.argv[2]
+        email = sys.argv[1]
+        api_key = sys.argv[2]
         genus = sys.argv[3]
         species = sys.argv[4]
         num = sys.argv[5]
         out_dir = sys.argv[6]
-        
-        handle = Entrez.esearch(db= "assembly", term= genus+" "+species+"[Organism] AND contig[Assembly Level]", retmax = num)
-        record = Entrez.read(handle)
 
-        if len(record['IdList']) == 0:
+        if len(valid_organism(genus, species, num, email, api_key)) == 0:
             sys.exit("""
             Incorrect organism name or ordering of arguments. 
             Check for spelling, indentation of the organism and refer to README for correct ordering of arguments.
@@ -31,7 +35,7 @@ If you are not sure how to obtain an NCBI api key, please refer to the README do
         else:
             if os.path.exists(out_dir) == False:
                 os.mkdir(out_dir)
-            handle1 = Entrez.esummary(db="assembly", id = ",".join(record['IdList']))
+            handle1 = Entrez.esummary(db="assembly", id = ",".join(valid_organism(genus, species, num, email, api_key)))
             record1 = Entrez.read(handle1)
             assembly_count = 0
 
