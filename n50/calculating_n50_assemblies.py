@@ -105,16 +105,21 @@ def n50_stat_summary(n50_array=None, out_dir=None, genus=None, species=None):
         s.median(),
         round(s.std(), 3)
     ]
+    if s.count() == 0:
+        for num in range(1, len(summary_list)):
+            summary_list[num] = 'NA'
+    if s.count() == 1:
+        summary_list[-1] = 'NA'
     output_file.write("Number of {} {} fasta assemblies is {}\n \
-    ".format(genus, species, s.count()))
+    ".format(genus, species, summary_list[0]))
     output_file.write("Min and Max N50 values are {} and {}\n \
-    ".format(s.min(), s.max()))
+    ".format(summary_list[1], summary_list[2]))
     output_file.write("Mean of N50 distribution is {}\n \
-    ".format(round(s.mean(), 3)))
+    ".format(summary_list[3]))
     output_file.write("Median of N50 distribution is {}\n \
-    ".format(s.median()))
+    ".format(summary_list[4]))
     output_file.write("Standard deviation of N50 distribution \
-    is {}\n".format(round(s.std(), 3)))
+    is {}\n".format(summary_list[-1]))
     return summary_list
 
 
@@ -122,12 +127,13 @@ def n50_stat_summary(n50_array=None, out_dir=None, genus=None, species=None):
 def n50_fig_summary(
     n50_array_log=None, out_dir=None, genus=None, species=None
 ):
+    fig = plt.figure()
     plt.hist(n50_array_log, bins=100, color='green')
     plt.xlabel('Log (base 10) N50 values')
     plt.ylabel('Counts')
     plt.title('Histogram of ' + genus + ' ' + species + ' assembly lengths')
-    plt.savefig(os.path.join(out_dir, 'hist.pdf'))
-    return plt
+    fig.savefig(os.path.join(out_dir, 'hist.pdf'))
+    return fig
 
 
 # Checking if the user input organism name is ok
@@ -160,19 +166,8 @@ def main():
     file_dic = fasta_extn_check(in_dir)
     assem_len_list = assembly_len_calc(in_dir, file_dic)
     n50, n50_log = n50_calc(assem_len_list)
-    if valid_organism_check(genus, species):
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
-        n50_stat_summary(n50, out_dir, genus, species)
-        n50_fig_summary(n50_log, out_dir, genus, species)
-        print(
-            """
-            Hooray! you have calculated n50 summary statistics
-            and plotted a histogram..
-            """
-        )
-    else:
-        print(
+    if not valid_organism_check(genus, species):
+        sys.exit(
             """
             User input organism name is incorrect.
             Either input complete scientific name (e.g. Homo sapiens) or
@@ -182,6 +177,17 @@ def main():
             https://www.ncbi.nlm.nih.gov/genome/browse/#!/overview/
             """
         )
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
+    n50_stat_summary(n50, out_dir, genus, species)
+    print(n50_stat_summary(n50, out_dir, genus, species))
+    n50_fig_summary(n50_log, out_dir, genus, species)
+    print(
+        """
+        Hooray! you have calculated n50 summary statistics
+        and plotted a histogram..
+        """
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,20 @@
+>contig1 with valid sequence
+ATGCA
+>contig2 with valid sequence in multiple lines
+ATGCNATGCGGCTAGCTAGCTTTATAGCGATCGATCGATC
+GCATCATGCATGCATGCATGCATTATCGATCAGCTAGCAT
+GATCAGCATCAGACTACGATCATCAGCATACTGACGA
+GCTAGACTAGCATCAGCATGATCGATCGATCAG
+>contig3 mix of valid sequence and invalid sequence
+ACATTAG-GATN
+A CAT TAG GAT
+>contig4 empty sequence
+>contig5 blank following line
+
+>contig6
+Hey what's up. This is not a sequence
+
+This is meant to be a paragraph without matching characters.
+So contig6 dictionary should be empty.
+I included > sign at the middle to see what happens.
+Although I am sure contig6 would still be empty.
