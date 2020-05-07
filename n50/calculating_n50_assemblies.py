@@ -127,14 +127,12 @@ def n50_stat_summary(n50_array=None, out_dir=None, genus=None, species=None):
 def n50_fig_summary(
     n50_array_log=None, out_dir=None, genus=None, species=None
 ):
-    fig = plt.figure()
     plt.hist(n50_array_log, bins=100, color='green')
     plt.xlabel('Log (base 10) N50 values')
     plt.ylabel('Counts')
     plt.title('Histogram of ' + genus + ' ' + species + ' assembly lengths')
-    fig.savefig(os.path.join(out_dir, 'hist.pdf'))
-    return fig
-
+    plt.savefig(os.path.join(out_dir, 'hist.png'))
+    return os.path.join(out_dir, 'hist.png')
 
 # Checking if the user input organism name is ok
 def valid_organism_check(genus=None, species=None):
@@ -180,7 +178,6 @@ def main():
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
     n50_stat_summary(n50, out_dir, genus, species)
-    print(n50_stat_summary(n50, out_dir, genus, species))
     n50_fig_summary(n50_log, out_dir, genus, species)
     print(
         """

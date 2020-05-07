@@ -9,10 +9,10 @@ import gzip
 import numpy as np
 import pytest
 import matplotlib.pyplot as plt
+import filecmp
 
 START_DIR = os.getcwd()
 TEST_INPUT_DIR = START_DIR+'/data'
-FAKE_INPUT_DIR = START_DIR+'/does_not_exist'
 EMPTY_DIR = TEST_INPUT_DIR+'/empty_dir'
 
 '''
@@ -110,35 +110,55 @@ def test_assembly_len_calc_single():
     method_assembly = assembly_len_calc(TEST_INPUT_DIR,test_file_dic_single)
     assert expected_assembly == method_assembly
 
+
+def test_assembly_len_calc_empty():
+    test_file_dic_empty = {}
+    expected_assembly = []
+    method_assembly = assembly_len_calc(EMPTY_DIR,test_file_dic_empty)
+    assert expected_assembly == method_assembly
+
+
 def test_n50_calc_multiple():
     expected_tuple = test_n50_tuple_good
     method_tuple = n50_calc(test_assem_list_good)
     assert expected_tuple == method_tuple
+
 
 def test_n50_calc_single():
     expected_tuple = ([test_n50_tuple_good[0][3]], [test_n50_tuple_good[1][3]])
     method_tuple = n50_calc([test_assem_list_good[-1]])
     assert expected_tuple == method_tuple
 
+
+def test_n50_calc_empty():
+    expected_tuple = ([], [])
+    method_tuple = n50_calc([])
+    assert expected_tuple == method_tuple
+
+
 def test_valid_organism_check_good():
     for g in range(0,len(genus_good)):
         for s in range(0,len(species_good)):
             assert valid_organism_check(genus_good[g],species_good[s])
+
 
 def test_valid_organism_check_bad():
     for g in range(0,len(genus_bad)):
         for s in range(0,len(species_bad)):
             assert valid_organism_check(genus_bad[g],species_bad[s]) == False
 
+
 def test_n50_stat_summary_multiple():
     expected_list = test_n50_stat_summary_good
     method_list = n50_stat_summary(test_n50_tuple_good[0], TEST_INPUT_DIR, 'desired', 'organism')
     assert expected_list == method_list
 
+
 def test_n50_summary_single():
     expected_list = test_n50_stat_summary_single
     method_list = n50_stat_summary(test_n50_tuple_good[0][3], TEST_INPUT_DIR, 'desired', 'organism')
     assert expected_list == method_list
+
 
 def test_n50_summary_empty():
     expected_list = test_n50_stat_summary_empty
@@ -146,14 +166,15 @@ def test_n50_summary_empty():
     method_list = n50_stat_summary(test_empty_assembly_list, TEST_INPUT_DIR, 'desired', 'organism')
     assert expected_list == method_list
 
-'''
+
 def test_n50_fig_summary():
-    test_fig = plt.figure()
     plt.hist(test_n50_tuple_good[1], bins=100, color='green')
     plt.xlabel('Log (base 10) N50 values')
     plt.ylabel('Counts')
     plt.title('Histogram of desired organism assembly lengths')
-    test_fig.savefig(os.path.join(TEST_INPUT_DIR, 'hist.pdf'))
+    plt.savefig(os.path.join(TEST_INPUT_DIR, 'expected.png'))
+    expected_fig = os.path.join(TEST_INPUT_DIR, 'expected.png')
     method_fig = n50_fig_summary(test_n50_tuple_good[1], TEST_INPUT_DIR, 'desired', 'organism')
-    assert test_fig == method_fig
-'''
+    assert filecmp.cmp(expected_fig, method_fig)
+
+
