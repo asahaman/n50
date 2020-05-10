@@ -10,10 +10,11 @@ import numpy as np
 import pytest
 import matplotlib.pyplot as plt
 import filecmp
+from pathlib import Path
 
-START_DIR = os.getcwd()
-TEST_INPUT_DIR = START_DIR+'/data'
-EMPTY_DIR = TEST_INPUT_DIR+'/empty_dir'
+START_DIR = Path(__file__).parent.absolute()
+TEST_INPUT_DIR = '{}/data/'.format(str(START_DIR))
+EMPTY_DIR = '{}/empty_dir/'.format(str(TEST_INPUT_DIR))
 
 '''
 Different examples of test fasta assembly files have been created in folder data:
@@ -168,13 +169,7 @@ def test_n50_summary_empty():
 
 
 def test_n50_fig_summary():
-    plt.hist(test_n50_tuple_good[1], bins=100, color='green')
-    plt.xlabel('Log (base 10) N50 values')
-    plt.ylabel('Counts')
-    plt.title('Histogram of desired organism assembly lengths')
-    plt.savefig(os.path.join(TEST_INPUT_DIR, 'expected.png'))
     expected_fig = os.path.join(TEST_INPUT_DIR, 'expected.png')
     method_fig = n50_fig_summary(test_n50_tuple_good[1], TEST_INPUT_DIR, 'desired', 'organism')
     assert filecmp.cmp(expected_fig, method_fig)
-
 
