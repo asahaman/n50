@@ -172,4 +172,3 @@ def test_n50_fig_summary():
     expected_fig = os.path.join(TEST_INPUT_DIR, 'expected.png')
     method_fig = n50_fig_summary(test_n50_tuple_good[1], TEST_INPUT_DIR, 'desired', 'organism')
     assert filecmp.cmp(expected_fig, method_fig)
-

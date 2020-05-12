@@ -37,15 +37,39 @@ def urls_array(id_list=None, num=None):
     return urls_list
 
 
+# Generating yes/no download switch for every entry in urls list
+# Switch returns true if file does not exist or size does not match
+# Switch returns false otherwise
+def download_needed(full_file_path=None, file_size=None):
+    if not os.path.exists(full_file_path) or \
+      file_size != os.path.getsize(full_file_path):
+        return True
+    else:
+        return False
+
+
 # Downloading fasta assemblies specified by url array
-def urls_download(urls_list=None, out_dir=None):
+def url_download(urls_list=None, out_dir=None):
     for i in range(0, len(urls_list)):
-        file_name = os.path.basename(urls_list[i] + '_genomic.fna.gz')
+        file_name = os.path.basename(urls_list[i]) + '_genomic.fna.gz'
         url_link = os.path.join(urls_list[i], file_name)
         full_file_path = os.path.join(out_dir, file_name)
-        urllib.request.urlretrieve(url_link, full_file_path)
-        printcount = i + 1
-        print(str(printcount) + ' files downloaded')
+        url_open = urllib.request.urlopen(url_link)
+        file_size = int(url_open.headers['Content-Length'])
+        file_count = i + 1
+        if file_count == 1:
+            rank_appendix = 'st'
+        elif file_count == 2:
+            rank_appendix = 'nd'
+        elif file_count == 3:
+            rank_appendix = 'rd'
+        elif file_count > 3:
+            rank_appendix = 'th'
+        if download_needed(full_file_path, file_size):
+            urllib.request.urlretrieve(url_link, full_file_path)
+            print(str(file_count) + rank_appendix + ' file downloaded')
+        else:
+            print(str(file_count) + rank_appendix + ' file already exists')
 
 
 def main():
@@ -67,7 +91,7 @@ def main():
         num = sys.argv[5]
         out_dir = sys.argv[6]
         api_list = entrez_api(genus, species, num, email, api_key)
-        if len(api_list) == 0:
+        if not api_list:
             sys.exit("""
             Incorrect organism name or ordering of arguments.
             Check for spelling, indentation of the organism and
@@ -77,9 +101,7 @@ def main():
             urls_list = urls_array(api_list, num)
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
-            urls_download(urls_list, out_dir)
-            print('\n{} files downloaded to {} \
-            '.format(len(urls_list), out_dir))
+            url_download(urls_list, out_dir)
 
 
 if __name__ == "__main__":
