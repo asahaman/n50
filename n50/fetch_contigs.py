@@ -1,8 +1,8 @@
 import sys
 import os
-import urllib.request
+import urllib 
 from Bio import Entrez
-
+import socket
 
 def entrez_api(
     genus=None, species=None, num=None, email=None, api_key=None
@@ -14,12 +14,18 @@ def entrez_api(
     """
     Entrez.email = email
     Entrez.api_key = api_key
-    handle = Entrez.esearch(
-        db="assembly",
-        term=genus+" "+species+"[Organism] AND contig[Assembly Level]",
-        retmax=num)
-    record = Entrez.read(handle)
-    id_list = record['IdList']
+    try:
+        handle = Entrez.esearch(
+            db="assembly",
+            term=genus+" "+species+"[Organism] AND contig[Assembly Level]",
+            retmax=num)
+        record = Entrez.read(handle)
+        id_list = record['IdList']
+    except urllib.error.URLError:
+        sys.exit("""
+        Internet connection is not working.
+        Thus the program cannot make NCBI api calls..Exiting..
+        """)
     return id_list
 
 
@@ -40,7 +46,13 @@ def urls_array(id_list=None, num=None):
 # Generating yes/no download switch for every entry in urls list
 # Switch returns true if file does not exist or size does not match
 # Switch returns false otherwise
-def download_needed(full_file_path=None, file_size=None):
+def download_needed(url_link=None, full_file_path=None):
+    try:
+        url_request = urllib.request.Request(url_link, method='HEAD')
+        url_open = urllib.request.urlopen(url_request, timeout=15)
+        file_size = int(url_open.headers['Content-Length'])
+    except urllib.error.URLError:
+        sys.exit('Internet not working. Program execution halted. Exiting..')
     if not os.path.exists(full_file_path) or \
       file_size != os.path.getsize(full_file_path):
         return True
@@ -54,8 +66,7 @@ def url_download(urls_list=None, out_dir=None):
         file_name = os.path.basename(urls_list[i]) + '_genomic.fna.gz'
         url_link = os.path.join(urls_list[i], file_name)
         full_file_path = os.path.join(out_dir, file_name)
-        url_open = urllib.request.urlopen(url_link)
-        file_size = int(url_open.headers['Content-Length'])
+        
         file_count = i + 1
         if file_count == 1:
             rank_appendix = 'st'
@@ -65,8 +76,9 @@ def url_download(urls_list=None, out_dir=None):
             rank_appendix = 'rd'
         elif file_count > 3:
             rank_appendix = 'th'
-        if download_needed(full_file_path, file_size):
-            urllib.request.urlretrieve(url_link, full_file_path)
+        
+        if download_needed(url_link, full_file_path):
+            urllib.request.urlretrieve(url_link, full_file_path)      
             print(str(file_count) + rank_appendix + ' file downloaded')
         else:
             print(str(file_count) + rank_appendix + ' file already exists')
@@ -97,11 +109,10 @@ def main():
             Check for spelling, indentation of the organism and
             refer to README for correct ordering of arguments.
             """)
-        else:
-            urls_list = urls_array(api_list, num)
-            if not os.path.exists(out_dir):
-                os.mkdir(out_dir)
-            url_download(urls_list, out_dir)
+        urls_list = urls_array(api_list, num)
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+        url_download(urls_list, out_dir)
 
 
 if __name__ == "__main__":
