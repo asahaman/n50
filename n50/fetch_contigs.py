@@ -2,7 +2,6 @@ import sys
 import os
 import urllib 
 from Bio import Entrez
-import socket
 
 def entrez_api(
     genus=None, species=None, num=None, email=None, api_key=None
@@ -49,7 +48,7 @@ def urls_array(id_list=None, num=None):
 def download_needed(url_link=None, full_file_path=None):
     try:
         url_request = urllib.request.Request(url_link, method='HEAD')
-        url_open = urllib.request.urlopen(url_request, timeout=15)
+        url_open = urllib.request.urlopen(url_request)
         file_size = int(url_open.headers['Content-Length'])
     except urllib.error.URLError:
         sys.exit('Internet not working. Program execution halted. Exiting..')
