@@ -4,6 +4,7 @@ import operator
 import sys
 import os
 import math
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -107,9 +108,9 @@ def n50_stat_summary(n50_array=None, out_dir=None, genus=None, species=None):
     ]
     if s.count() == 0:
         for num in range(1, len(summary_list)):
-            summary_list[num] = 'NA'
+            summary_list[num] = np.nan
     if s.count() == 1:
-        summary_list[-1] = 'NA'
+        summary_list[-1] = np.nan
     output_file.write("Number of {} {} fasta assemblies is {}\n \
     ".format(genus, species, summary_list[0]))
     output_file.write("Min and Max N50 values are {} and {}\n \
@@ -133,6 +134,7 @@ def n50_fig_summary(
     plt.title('Histogram of ' + genus + ' ' + species + ' assembly lengths')
     plt.savefig(os.path.join(out_dir, 'hist.png'))
     return os.path.join(out_dir, 'hist.png')
+
 
 # Checking if the user input organism name is ok
 def valid_organism_check(genus=None, species=None):
@@ -179,7 +181,7 @@ def main():
         os.mkdir(out_dir)
     n50_stat_summary(n50, out_dir, genus, species)
     n50_fig_summary(n50_log, out_dir, genus, species)
-    print(
+    sys.stdout.write(
         """
         Hooray! you have calculated n50 summary statistics
         and plotted a histogram..

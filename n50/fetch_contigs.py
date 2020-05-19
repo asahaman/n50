@@ -1,7 +1,8 @@
 import sys
 import os
-import urllib 
+import urllib
 from Bio import Entrez
+
 
 def entrez_api(
     genus=None, species=None, num=None, email=None, api_key=None
@@ -20,11 +21,11 @@ def entrez_api(
             retmax=num)
         record = Entrez.read(handle)
         id_list = record['IdList']
-    except urllib.error.URLError:
-        sys.exit("""
-        Internet connection is not working.
-        Thus the program cannot make NCBI api calls..Exiting..
-        """)
+    except Exception:
+        raise Exception('Internet connection not working..Exiting...')
+    if len(id_list) == 0:
+        raise RuntimeError('Either incorrect organism or number of input \
+            contigs is zero..Exiting.....')
     return id_list
 
 
@@ -46,14 +47,11 @@ def urls_array(id_list=None, num=None):
 # Switch returns true if file does not exist or size does not match
 # Switch returns false otherwise
 def download_needed(url_link=None, full_file_path=None):
-    try:
-        url_request = urllib.request.Request(url_link, method='HEAD')
-        url_open = urllib.request.urlopen(url_request)
-        file_size = int(url_open.headers['Content-Length'])
-    except urllib.error.URLError:
-        sys.exit('Internet not working. Program execution halted. Exiting..')
-    if not os.path.exists(full_file_path) or \
-      file_size != os.path.getsize(full_file_path):
+    url_request = urllib.request.Request(url_link, method='HEAD')
+    url_open = urllib.request.urlopen(url_request)
+    file_size = int(url_open.headers['Content-Length'])
+    if (not os.path.exists(full_file_path) or
+            file_size != os.path.getsize(full_file_path)):
         return True
     else:
         return False
@@ -61,11 +59,11 @@ def download_needed(url_link=None, full_file_path=None):
 
 # Downloading fasta assemblies specified by url array
 def url_download(urls_list=None, out_dir=None):
+    obj = []
     for i in range(0, len(urls_list)):
         file_name = os.path.basename(urls_list[i]) + '_genomic.fna.gz'
         url_link = os.path.join(urls_list[i], file_name)
         full_file_path = os.path.join(out_dir, file_name)
-        
         file_count = i + 1
         if file_count == 1:
             rank_appendix = 'st'
@@ -75,12 +73,21 @@ def url_download(urls_list=None, out_dir=None):
             rank_appendix = 'rd'
         elif file_count > 3:
             rank_appendix = 'th'
-        
-        if download_needed(url_link, full_file_path):
-            urllib.request.urlretrieve(url_link, full_file_path)      
-            print(str(file_count) + rank_appendix + ' file downloaded')
-        else:
-            print(str(file_count) + rank_appendix + ' file already exists')
+        try:
+            if download_needed(url_link, full_file_path):
+                urllib.request.urlretrieve(url_link, full_file_path)
+                string = str(file_count) + rank_appendix + ' file downloaded'
+                sys.stdout.write(string + '\n')
+                obj.append(string)
+            else:
+                string = str(file_count) + rank_appendix + \
+                    ' file already exists'
+                sys.stdout.write(string + '\n')
+                obj.append(string)
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt('Program halted..Total {} \
+                files downloaded'.format(file_count))
+    return obj
 
 
 def main():
@@ -101,17 +108,17 @@ def main():
         species = sys.argv[4]
         num = sys.argv[5]
         out_dir = sys.argv[6]
-        api_list = entrez_api(genus, species, num, email, api_key)
-        if not api_list:
-            sys.exit("""
-            Incorrect organism name or ordering of arguments.
-            Check for spelling, indentation of the organism and
-            refer to README for correct ordering of arguments.
-            """)
+        try:
+            api_list = entrez_api(genus, species, num, email, api_key)
+        except Exception as e:
+            sys.exit(e)
         urls_list = urls_array(api_list, num)
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
-        url_download(urls_list, out_dir)
+        try:
+            url_download(urls_list, out_dir)
+        except Exception as e:
+            sys.exit(e)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
-#Zipped or text files
-*.gz
+#text files
 *.txt
 
 #Swaps
