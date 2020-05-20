@@ -21,7 +21,7 @@ setup(name='n50',
       license='MIT',
       packages=['n50'],
       install_requires=[
-          'biopython',
+          'biopython','pandas'
       ],
       entry_points = {
         'console_scripts': ['contig_dnld=n50.fetch_contigs:main',
