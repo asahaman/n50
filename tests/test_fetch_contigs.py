@@ -28,6 +28,9 @@ import tempfile
 import urllib
 import os
 import sys
+import mock
+import Bio
+
 
 START_DIR = Path(__file__).parent.absolute()
 
@@ -39,6 +42,7 @@ test_email = 'idontexist@gmail.com'
 test_api_key = None
 
 # Defining return objects for sucessful test functions
+RECORD = {'IdList':['7143261', '7143111', '7140871']}
 TEST_ID_LIST = ['7143261', '7143111', '7140871']
 TEST_URL_LIST = [
     'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/013/112/445/GCA_013112445.1_ASM1311244v1',
@@ -63,11 +67,12 @@ class TestFetchContigs:
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
-    # Test for good API call
+    # Test for good API call using mock function
+    @mock.patch('Bio.Entrez.read', mock.MagicMock(return_value=RECORD))
     def test_entrez_api_good(self):
         method_id_list = entrez_api(test_genus_good, test_species_good,
                                     test_num_good, test_email, test_api_key)
-        assert TEST_ID_LIST == method_id_list
+        assert RECORD['IdList'] == method_id_list
 
 
     # Test for bad API call by altering genus, species and number of contigs

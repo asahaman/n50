@@ -237,6 +237,7 @@ class TestCalcN50:
                 of genus and species'''
                 assert valid_organism_check(genus_good[g], species_good[s])
 
+
     # Test for invalid organism check
     def test_valid_organism_check_bad(self):
         '''Iterating through bad combinations of genus and species names
@@ -285,8 +286,8 @@ class TestCalcN50:
         method_list = n50_stat_summary(test_empty_assembly_list,
                                     TEST_INPUT_DIR, 'desired', 'organism')
         assert expected_list == method_list
-    
-    
+
+
     # Test for checking histogram plot
     def test_n50_fig_summary(self):
         '''Calling function will generate matplotlib histogram for a
