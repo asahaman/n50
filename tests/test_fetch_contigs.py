@@ -91,9 +91,6 @@ class MockHeader:
 
 
 class TestFetchContigs:
-    @classmethod
-    def setup_class(cls):
-        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
     # Test for valid API call using mock function
@@ -131,6 +128,7 @@ class TestFetchContigs:
         return_value='esummary_works_well'))
     @mock.patch('Bio.Entrez.read', mock.MagicMock(
         return_value=TEST_RECORD2))
+
     def test_urls_array_good(self):
         method_urls_array = urls_array(TEST_RECORD1['IdList'], test_num_good)
         assert TEST_URL_LIST == method_urls_array
@@ -182,6 +180,7 @@ class TestFetchContigs:
     # Test for downloading contigs where files already exist
     @mock.patch('urllib.request.urlretrieve', mock.MagicMock(
         return_value=TEST_DOWNLOAD_STR2))
+
     def test_url_download_exists(self):
 
         '''Return string object of existing files'''
