@@ -43,6 +43,7 @@ test_api_key = None
 
 # Defining biopython example return objects from Entrez API calls
 TEST_RECORD1 = {'IdList':['7143261', '7143111', '7140871']}
+TEST_RECORD1_EMPTY = {'IdList':[]}
 TEST_RECORD2 = {
     'DocumentSummarySet':{
         'DocumentSummary': [ {
@@ -98,7 +99,6 @@ class TestFetchContigs:
         return_value='esearch_works_well'))
     @mock.patch('Bio.Entrez.read', mock.MagicMock(
         return_value=TEST_RECORD1))
-
     def test_entrez_api_good(self):
         method_id_list = entrez_api(test_genus_good, test_species_good,
                                     test_num_good, test_email, test_api_key)
@@ -106,6 +106,8 @@ class TestFetchContigs:
 
 
     # Test for bad API call by altering genus, species and number of contigs
+    @mock.patch('Bio.Entrez.read', mock.MagicMock(
+        return_value=TEST_RECORD1_EMPTY))
     def test_entrez_api_empty(self):
         test_num_bad = 0
         with pytest.raises(RuntimeError):
@@ -128,7 +130,6 @@ class TestFetchContigs:
         return_value='esummary_works_well'))
     @mock.patch('Bio.Entrez.read', mock.MagicMock(
         return_value=TEST_RECORD2))
-
     def test_urls_array_good(self):
         method_urls_array = urls_array(TEST_RECORD1['IdList'], test_num_good)
         assert TEST_URL_LIST == method_urls_array
@@ -169,7 +170,6 @@ class TestFetchContigs:
     # Test for downloading contigs returning list of strings
     @mock.patch('urllib.request.urlretrieve', mock.MagicMock(
         return_value=TEST_DOWNLOAD_STR1))
-
     def test_url_download(self):
 
         '''Downloading contigs to temporary directory returning string object'''
@@ -180,7 +180,6 @@ class TestFetchContigs:
     # Test for downloading contigs where files already exist
     @mock.patch('urllib.request.urlretrieve', mock.MagicMock(
         return_value=TEST_DOWNLOAD_STR2))
-
     def test_url_download_exists(self):
 
         '''Return string object of existing files'''
