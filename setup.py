@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='n50',
-      version='0.1.0',
+      version='0.3.0',
       description='N50 calculation from bacterial assemblies',
       long_description=readme(),
       classifiers=[
@@ -21,7 +21,7 @@ setup(name='n50',
       license='MIT',
       packages=['n50'],
       install_requires=[
-          'biopython',
+          'biopython','pandas','matplotlib'
       ],
       entry_points = {
         'console_scripts': ['contig_dnld=n50.fetch_contigs:main',

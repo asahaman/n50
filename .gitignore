@@ -1,2 +1,5 @@
-*.gz
+#text files
 *.txt
+
+#Swaps
+*.swp
