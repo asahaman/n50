@@ -55,7 +55,7 @@ def entrez_api(
 # Using primary IDs to generate url links of downloadable assemblies
 def urls_array(id_list=None, num=None):
     handle = Entrez.esummary(db="assembly", id=",".join(id_list))
-    record = Entrez.read(handle)
+    record = Entrez.read(handle, validate=False)
 
     urls_list = []
 
