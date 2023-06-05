@@ -1,0 +1,6 @@
+How about orphaned nucleotides
+There is no > header for this fasta
+But you have
+ATGCCTTGA-NNNNN
+ACGTCGATCGATCTAGC-NCATCNCTCATCA
+This file should generate empty dictionary
